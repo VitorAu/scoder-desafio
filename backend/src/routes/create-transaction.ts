@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 interface CreateTransactionBody {
   title: string;
   value: string;
-  due_date: string;
+  due_date: Date;
   description: string;
   is_debit: boolean;
   is_deposit: boolean;

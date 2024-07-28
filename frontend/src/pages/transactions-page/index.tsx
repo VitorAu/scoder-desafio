@@ -1,105 +1,67 @@
-import { useState, useEffect } from "react";
-import { IoAdd } from "react-icons/io5";
-import { Button } from "../../components/button";
-import { CreateTransactionModal } from "./create-transaction-modal";
-import { TransactionsList } from "./transactions-list";
-import { format } from "date-fns";
-import { createTransaction } from "../../lib/axios";
-
-export interface Transaction {
-  transaction_title: string;
-  transaction_value: string;
-  transaction_date: Date;
-  transaction_description: string;
-  transaction_is_debit: boolean;
-  transaction_is_deposit: boolean;
-}
-
-function isValidDate(d: unknown): boolean {
-  return d instanceof Date && !isNaN(d.getTime());
-}
+import { useState, useEffect } from 'react';
+import { IoAdd } from 'react-icons/io5';
+import axios from 'axios';
+import { Button } from '../../components/button';
+import { TransactionsList } from './transaction-list';
+import { TransactionModal } from './create-transaction-modal';
+import { Transaction } from './types';
+import { useNavigate } from 'react-router-dom';
 
 export function TransactionsPage() {
-  const [isCreateTransactionModalOpen, setIsCreateTransactionModalOpen] =
-    useState(false);
-  const [transactionsToList, setTransactionsToList] = useState<Transaction[]>([]);
-  const [viewType, setViewType] = useState<"month" | "year">("month");
-
-  function openCreateTransactionModal() {
-    setIsCreateTransactionModalOpen(true);
-  }
-  function closeCreateTransactionModal() {
-    setIsCreateTransactionModalOpen(false);
-  }
-  async function handleCreateTransaction(transaction: Transaction) {
-    try {
-      const newTransaction = await createTransaction(transaction);
-      console.log("New transaction from API:", newTransaction);
-      setTransactionsToList((prevTransactions) => [
-        ...prevTransactions,
-        newTransaction,
-      ]);
-      console.log("Updated transactions list:", transactionsToList);
-    } catch (error) {
-      console.error("Error creating transaction:", error);
-    }
-  }
-
-  function handleToggleViewType() {
-    setViewType((prevViewType) =>
-      prevViewType === "month" ? "year" : "month"
-    );
-  }
-
-  function groupTransactionsByPeriod(
-    transactions: Transaction[],
-    viewType: "month" | "year"
-  ) {
-    console.log("Transactions to be grouped:", transactions);
-    return transactions.reduce((groups, transaction) => {
-      const date = new Date(transaction.transaction_date);
-      console.log("Transaction date:", date);
-
-      if (!isValidDate(date)) {
-        console.log("Invalid date:", transaction.transaction_date);
-        return groups; // Ignora transações com data inválida
-      }
-
-      const period = format(date, viewType === "month" ? "yyyy-MM" : "yyyy");
-      if (!groups[period]) {
-        groups[period] = [];
-      }
-      groups[period].push(transaction);
-      return groups;
-    }, {} as { [key: string]: Transaction[] });
-  }
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isCreateTransactionModalOpen, setCreateTransactionModalOpen] = useState(false);
+  const [viewType, setViewType] = useState<'month' | 'year'>('month');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    async function fetchTransactions() {
+    const fetchTransactions = async () => {
       try {
-        const response = await fetch("http://localhost:9898/transactions");
-        const data: Transaction[] = await response.json();
-        setTransactionsToList(data);
+        const response = await axios.get('http://localhost:9898/transactions');
+        setTransactions(response.data);
       } catch (error) {
-        console.error("Error fetching transactions:", error);
+        console.error('Erro ao buscar transações:', error);
       }
-    }
+    };
 
     fetchTransactions();
   }, []);
 
-  useEffect(() => {
-    console.log("Transactions list updated:", transactionsToList);
-  }, [transactionsToList]);
+  const handleToggleViewType = () => {
+    setViewType(viewType === 'month' ? 'year' : 'month');
+  };
+  const openCreateTransactionModal = () => {
+    setCreateTransactionModalOpen(true);
+  };
+  const closeCreateTransactionModal = () => {
+    setCreateTransactionModalOpen(false);
+  };
+  const handleCreateTransaction = async (newTransaction: Omit<Transaction, 'id'>) => {
+    try {
+      const response = await axios.post('http://localhost:9898/transactions', newTransaction);
+      setTransactions([...transactions, response.data]);
+      closeCreateTransactionModal();
+    } catch (error) {
+      console.error('Erro ao criar transação:', error);
+    }
+  };
+  const groupTransactionsByPeriod = (transactions: Transaction[], viewType: 'month' | 'year') => {
+    return transactions.reduce((groups, transaction) => {
+      const date = new Date(transaction.due_date);
+      const key = viewType === 'month'
+        ? `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`
+        : date.getFullYear().toString();
 
-  const groupedTransactions = groupTransactionsByPeriod(
-    transactionsToList,
-    viewType
-  );
-  console.log(
-    "Grouped transactions:",
-    JSON.stringify(groupedTransactions, null, 2)
-  );
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(transaction);
+      return groups;
+    }, {} as { [key: string]: Transaction[] });
+  };
+  const handleLogout = () => {
+    navigate('/');
+  };
+  const groupedTransactions = groupTransactionsByPeriod(transactions, viewType);
 
   return (
     <div className="h-screen w-screen flex flex-col space-y-5 py-8 px-12">
@@ -111,8 +73,9 @@ export function TransactionsPage() {
         </div>
         <div className="flex items-center space-x-5">
           <Button onClick={handleToggleViewType}>
-            {viewType === "month" ? "Visualizar por Ano" : "Visualizar por Mês"}
+            {viewType === 'month' ? 'Visualizar por Ano' : 'Visualizar por Mês'}
           </Button>
+          <Button variant='secondary' onClick={handleLogout}>Sair</Button>
         </div>
       </div>
       <div className="flex flex-col space-y-2 h-full overflow-hidden">
@@ -123,16 +86,13 @@ export function TransactionsPage() {
             <span>Cadastrar nova transação</span>
           </Button>
         </div>
-        <TransactionsList
-          groupedTransactions={groupedTransactions}
-          viewType={viewType}
-        />
+        <TransactionsList groupedTransactions={groupedTransactions} viewType={viewType} />
       </div>
 
       {isCreateTransactionModalOpen && (
-        <CreateTransactionModal
-          closeCreateTransactionModal={closeCreateTransactionModal}
-          handleCreateTransaction={handleCreateTransaction}
+        <TransactionModal
+          closeModal={closeCreateTransactionModal}
+          createTransaction={handleCreateTransaction}
         />
       )}
     </div>

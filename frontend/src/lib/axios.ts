@@ -27,7 +27,7 @@ export async function createTransaction(transaction: Transaction) {
   const response = await api.post('/transactions', {
     title: transaction.transaction_title,
     value: transaction.transaction_value,
-    due_date: transaction.transaction_date.toISOString(),
+    due_date: transaction.transaction_date,
     description: transaction.transaction_description,
     is_debit: transaction.transaction_is_debit,
     is_deposit: transaction.transaction_is_deposit,

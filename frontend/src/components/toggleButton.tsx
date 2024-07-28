@@ -1,4 +1,3 @@
-
 interface ToggleButtonProps {
   children_on: string;
   children_off: string;
@@ -15,7 +14,7 @@ export function ToggleButton({
   return (
     <button
       type="button"
-      className={`py-2 px-4 rounded-lg ${isToggled ? "bg-green-500" : "bg-red-500"}`}
+      className={`w-48 py-2 px-4 rounded-lg ${isToggled ? 'bg-green-500' : 'bg-red-500'}`}
       onClick={() => onToggle(!isToggled)}
     >
       {isToggled ? children_on : children_off}
