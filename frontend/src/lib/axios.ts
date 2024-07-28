@@ -24,7 +24,14 @@ export async function registerUser(userRegister: { user_name: string; user_email
 }
 
 export async function createTransaction(transaction: Transaction) {
-  const response = await api.post('/transactions', transaction);
+  const response = await api.post('/transactions', {
+    title: transaction.transaction_title,
+    value: transaction.transaction_value,
+    due_date: transaction.transaction_date.toISOString(),
+    description: transaction.transaction_description,
+    is_debit: transaction.transaction_is_debit,
+    is_deposit: transaction.transaction_is_deposit,
+  });
   return response.data;
 }
 

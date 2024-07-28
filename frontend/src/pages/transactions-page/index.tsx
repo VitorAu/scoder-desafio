@@ -22,9 +22,7 @@ function isValidDate(d: unknown): boolean {
 export function TransactionsPage() {
   const [isCreateTransactionModalOpen, setIsCreateTransactionModalOpen] =
     useState(false);
-  const [transactionsToList, setTransactionsToList] = useState<Transaction[]>(
-    []
-  );
+  const [transactionsToList, setTransactionsToList] = useState<Transaction[]>([]);
   const [viewType, setViewType] = useState<"month" | "year">("month");
 
   function openCreateTransactionModal() {
