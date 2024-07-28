@@ -49,7 +49,7 @@ export async function createTransaction(fastify: FastifyInstance) {
             .status(400)
             .send({
               message:
-                "Campos obrigatórios estão faltando em algumas transações",
+                "Incomplete fields",
             });
         }
 
@@ -59,24 +59,24 @@ export async function createTransaction(fastify: FastifyInstance) {
           );
           return reply.status(201).send(newTransactions);
         } catch (error) {
-          console.error("Erro ao criar transações:", error);
+          console.error("Error creating transactions:", error);
           return reply
             .status(500)
-            .send({ message: "Erro ao criar transações" });
+            .send({ message: "Error creating transaction" });
         }
       } else {
         if (!validateData(body)) {
           return reply
             .status(400)
-            .send({ message: "Campos obrigatórios estão faltando" });
+            .send({ message: "Incomplete fields" });
         }
 
         try {
           const newTransaction: Transaction = await createNewTransaction(body);
           return reply.status(201).send(newTransaction);
         } catch (error) {
-          console.error("Erro ao criar transação:", error);
-          return reply.status(500).send({ message: "Erro ao criar transação" });
+          console.error("Error creating transactions:", error);
+          return reply.status(500).send({ message: "Error creating transaction" });
         }
       }
     }
