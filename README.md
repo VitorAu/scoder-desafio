@@ -1,5 +1,3 @@
-<!-- PROJECT LOGO -->
-<br />
 <div align="center">
   <h1 align="center">Desafio scoder</h1>
 </div>
