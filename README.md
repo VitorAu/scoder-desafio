@@ -36,7 +36,7 @@ Para executar este projeto, você precisará dos seguintes itens:
 Siga os passos abaixo para instalar e configurar o aplicativo. Este projeto requer a configuração do ambiente para o frontend e backend.
 1. **Clone o repositório**
    ```sh
-   git clone [https://github.com/your_username_/Project-Name.git](https://github.com/VitorAu/scoder-desafio.git)
+   git clone https://github.com/VitorAu/scoder-desafio.git
    ```
 2. Navegue até o diretório do projeto:
    ```sh
