@@ -66,7 +66,15 @@ Siga os passos abaixo para instalar e configurar o aplicativo. Este projeto requ
    ```sh
    cp .env.example .env
    ```
-9. Inicie o servidor backend:
+9. Execute as Migrations do Prisma:
+   ```sh
+   npx prisma migrate deploy
+   ```
+10. Gere o Cliente do Prisma:
+   ```sh
+   npx prisma generate
+   ```
+11. Inicie o servidor backend:
    ```sh
    npm run dev
    ```
