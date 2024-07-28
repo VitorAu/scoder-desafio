@@ -2,7 +2,7 @@ import fastify from "fastify";
 import { createTransaction } from "./routes/create-transaction";
 import { serializerCompiler, validatorCompiler } from "fastify-type-provider-zod";
 import { userRegister } from "./routes/user-register";
-import { getTransactions } from "./routes/get-transaction";
+import { getTransaction } from "./routes/get-transaction";
 import { userLogin } from "./routes/user-login";
 import cors from '@fastify/cors';
 
@@ -17,9 +17,9 @@ app.register(cors, {
 
 app.register(createTransaction);
 app.register(userRegister);
-app.register(getTransactions);
+app.register(getTransaction);
 app.register(userLogin);
 
-app.listen({ port: 4444 }).then(() => {
+app.listen({ port: 9898 }).then(() => {
   console.log("Server running");
 });

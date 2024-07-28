@@ -1,44 +1,66 @@
-import { FastifyInstance } from "fastify";
-import { ZodTypeProvider } from "fastify-type-provider-zod";
-import { z } from "zod";
-import { prisma } from "../lib/prisma";
+// src/routes/create-transaction.ts
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { PrismaClient, Transaction } from '@prisma/client';
 
-export async function createTransaction(app: FastifyInstance) {
-  app.withTypeProvider<ZodTypeProvider>().post(
-    "/transactions",
-    {
-      schema: {
-        body: z.object({
-          title: z.string().min(3),
-          value: z.string().min(1),
-          due_date: z.coerce.date(),
-          description: z.string().optional(),
-          is_debit: z.boolean().optional(),
-          is_deposit: z.boolean().optional(),
-        }),
-      },
-    },
-    async (request, reply) => {
-      const { title, value, due_date, description, is_debit, is_deposit } =
-        request.body;
+const prisma = new PrismaClient();
+
+interface CreateTransactionBody {
+  title: string;
+  value: string;
+  due_date: string;
+  description: string;
+  is_debit: boolean;
+  is_deposit: boolean;
+}
+
+export async function createTransaction(fastify: FastifyInstance) {
+  fastify.post('/transactions', async (request: FastifyRequest<{ Body: CreateTransactionBody | CreateTransactionBody[] }>, reply: FastifyReply) => {
+    const body = request.body;
+
+    // Função para validar dados
+    const validateData = (data: CreateTransactionBody) => {
+      return data.title && data.value && data.due_date;
+    };
+
+    // Função para criar uma nova transação
+    const createNewTransaction = async (data: CreateTransactionBody) => {
+      return await prisma.transaction.create({
+        data: {
+          title: data.title,
+          value: data.value,
+          due_date: new Date(data.due_date).toISOString(),
+          description: data.description,
+          is_debit: data.is_debit,
+          is_deposit: data.is_deposit,
+        },
+      });
+    };
+
+    if (Array.isArray(body)) {
+      const invalidTransactions = body.filter((transaction) => !validateData(transaction));
+      if (invalidTransactions.length > 0) {
+        return reply.status(400).send({ message: 'Campos obrigatórios estão faltando em algumas transações' });
+      }
 
       try {
-        const transaction = await prisma.transaction.create({
-          data: {
-            title,
-            value,
-            due_date,
-            description: description || "",
-            is_debit: is_debit !== undefined ? is_debit : true,
-            is_deposit: is_deposit !== undefined ? is_deposit : true,
-          },
-        });
-
-        return { transactionId: transaction.id };
+        const newTransactions: Transaction[] = await Promise.all(body.map(createNewTransaction));
+        return reply.status(201).send(newTransactions);
       } catch (error) {
-        console.error("Erro ao criar transação:", error);
-        return reply.status(500).send({ error: "Erro interno do servidor." });
+        console.error('Erro ao criar transações:', error);
+        return reply.status(500).send({ message: 'Erro ao criar transações' });
+      }
+    } else {
+      if (!validateData(body)) {
+        return reply.status(400).send({ message: 'Campos obrigatórios estão faltando' });
+      }
+
+      try {
+        const newTransaction: Transaction = await createNewTransaction(body);
+        return reply.status(201).send(newTransaction);
+      } catch (error) {
+        console.error('Erro ao criar transação:', error);
+        return reply.status(500).send({ message: 'Erro ao criar transação' });
       }
     }
-  );
+  });
 }

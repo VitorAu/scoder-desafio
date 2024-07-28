@@ -10,21 +10,24 @@ export function TransactionsList({
   groupedTransactions,
   viewType,
 }: TransactionsListProps) {
-
   return (
     <div className="p-5 rounded-lg bg-[#151518] h-full flex flex-col w-full space-y-5 overflow-y-auto">
       {Object.entries(groupedTransactions).map(([period, transactions]) => {
         let formattedPeriod: string;
-        if (viewType === 'month') {
-          const [yearStr, monthStr] = period.split('-');
-          const year = parseInt(yearStr, 10);
-          const month = parseInt(monthStr, 10);
-          const date = new Date(year, month - 1);
-          formattedPeriod = format(date, 'MMMM yyyy')
-        } else {
-          const year = parseInt(period, 10);
-          const date = new Date(year, 0, 1);
-          formattedPeriod = format(date, 'yyyy');
+        try {
+          if (viewType === 'month') {
+            const [yearStr, monthStr] = period.split('-');
+            const year = parseInt(yearStr, 10);
+            const month = parseInt(monthStr, 10);
+            const date = new Date(year, month - 1);
+            formattedPeriod = format(date, 'MMMM yyyy');
+          } else {
+            const year = parseInt(period, 10);
+            const date = new Date(year, 0, 1);
+            formattedPeriod = format(date, 'yyyy');
+          }
+        } catch (error) {
+          formattedPeriod = period;
         }
 
         const total = transactions.reduce((sum, transaction) => {

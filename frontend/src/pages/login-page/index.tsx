@@ -3,7 +3,7 @@ import { Button } from "../../components/button";
 import { UserLoginModal } from "./user-login-modal";
 import { UserRegisterModal } from "./user-register-modal";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../../lib/axios";  // Certifique-se de importar a função de login do axios
+import { loginUser } from "../../lib/axios";
 import { registerUser } from "../../lib/axios";
 
 export interface UserRegister {
@@ -11,7 +11,6 @@ export interface UserRegister {
   user_email: string;
   user_password: string;
 }
-
 export interface UserLogin {
   user_email: string;
   user_password: string;
@@ -32,19 +31,15 @@ export function LoginPage() {
   function openUserLoginModal() {
     setIsUserLoginModalOpen(true);
   }
-  
   function closeUserLoginModal() {
     setIsUserLoginModalOpen(false);
   }
-  
   function openUserRegisterModal() {
     setIsUserRegisterModalOpen(true);
   }
-  
   function closeUserRegisterModal() {
     setIsUserRegisterModalOpen(false);
   }
-  
   async function handleLogin(userLogin: UserLogin) {
     try {
       const response = await loginUser(userLogin);
@@ -57,7 +52,6 @@ export function LoginPage() {
       alert("Error during login. Please try again.");
     }
   }
-  
   async function handleCreateUser(userRegister: UserRegister) {
     try {
       await registerUser(userRegister);

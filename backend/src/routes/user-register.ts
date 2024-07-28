@@ -15,7 +15,6 @@ export const userRegister: FastifyPluginAsync = async (fastify) => {
     const { user_name, user_email, user_password } = request.body as { user_name: string; user_email: string; user_password: string };
 
     try {
-      // Verifica se o e-mail já está em uso
       const existingUser = await prisma.user.findUnique({
         where: { email: user_email },
       });
@@ -25,7 +24,6 @@ export const userRegister: FastifyPluginAsync = async (fastify) => {
         return;
       }
 
-      // Cria um novo usuário
       const newUser = await prisma.user.create({
         data: {
           name: user_name,
